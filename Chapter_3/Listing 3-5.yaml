@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Sample S3 Bucket with Versioning Enabled'
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::AccountId}-${AWS::Region}-bucket
+      VersioningConfiguration:
+        Status: Enabled
+    DeletionPolicy: Retain
+Outputs:
+  BucketName:
+    Value: !Ref S3Bucket
+    Description: S3 Bucket Name

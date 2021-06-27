@@ -1,0 +1,15 @@
+version: 0.0
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "arn:aws:ecs:us-east-1:111222333444:task-definition/my-task-definition-family-name:1"
+        LoadBalancerInfo:
+          ContainerName: "SampleApplicationName"
+          ContainerPort: 80
+Hooks:
+  - BeforeInstall: "ValidateBeforeInstall"
+  - AfterInstall: "ValidateAfterInstall"
+  - AfterAllowTestTraffic: "ValidateAfterTestTraffic"
+  - BeforeAllowTraffic: "ValidateBeforeProdTraffic"
+  - AfterAllowTraffic: "ValidateAfterProdTraffic"
