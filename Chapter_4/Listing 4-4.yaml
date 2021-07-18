@@ -1,0 +1,59 @@
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC to launch the EC2 Mac Instance
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: |
+      Subnet to launch the EC2 Mac Instance. This subnet must be in the vpc provided in VpcId, 
+      the subnet must also be in the same availability zone as the dedicated host provided in MacEc2Host parameter.
+  MacEc2Host:
+    Type: String
+    Default: h-xxxxxxxxxxxxxx
+    Description: The Host ID of the Allocated Mac Dedicated host
+  SourceIp:
+    Type: String
+    Default: 1.2.3.4/32
+    Description: |
+      Source IP address and subnet mask from where connection will be made to the Ec2 Mac instance. This includes for SSH and VNC traffic. 
+      IP address provided here will be used for security group configuration. e.g. 1.2.3.4/32
+  Ec2KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Already existing EC2 keypair to be used for SSH access
+  MacOSAmi:
+    Type: AWS::EC2::Image::Id
+    Default: ami-059ff882c04ebed21
+    Description: latest AMI ID for the Mac OS instance 
+
+Resources:
+  Ec2MacSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Enable SSH and VNC access to Mac Instance
+      SecurityGroupIngress:
+      - CidrIp: !Ref SourceIp
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      - CidrIp: !Ref SourceIp
+        FromPort: 5900
+        IpProtocol: tcp
+        ToPort: 5900
+  MacEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      Affinity: host
+      ImageId: !Ref MacOSAmi
+      KeyName: !Ref Ec2KeyPairName
+      InstanceType: mac1.metal
+      HostId: !Ref MacEc2Host
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds:
+        - !Ref Ec2MacSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp2
+            VolumeSize: '200'
+            DeleteOnTermination: 'true'
