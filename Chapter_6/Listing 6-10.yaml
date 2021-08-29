@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  RepositoryName:
+    Type: String
+    Default: devops-ios-repository
+    Description: Name of the CodeCommit Repository
+
+Resources:
+  MyRepo:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      RepositoryDescription: Example Description
