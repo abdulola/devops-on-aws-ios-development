@@ -1,5 +1,5 @@
 variable "aws-account-id" {
-  default = "168181944806"
+  default = "xxxxxxxxxxxx"
 }
 
 variable "aws-region" {
