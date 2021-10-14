@@ -1,0 +1,28 @@
+{
+  "Version": "2008-10-17",
+  "Id": "__default_policy_ID",
+  "Statement": [
+    {
+      "Sid": "__owner_statement",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789101:root"
+      },
+      "Action": "SQS:*",
+      "Resource": "arn:aws:sqs:us-east-1:123456789101:codecommit-trigger-queue"
+    }
+  ,
+  {
+    "Effect":"Allow",
+    "Principal": {
+      "Service": "sns.amazonaws.com"
+    },
+    "Action":"sqs:SendMessage",
+    "Resource":"arn:aws:sqs:us-east-1:123456789101:codecommit-trigger-queue",
+    "Condition":{
+      "ArnEquals":{
+        "aws:SourceArn":"arn:aws:sns:us-east-1:123456789101:codecommit-trigger-topic"
+      }
+    }
+  }]
+}
