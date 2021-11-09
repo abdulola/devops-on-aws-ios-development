@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    environment {
+        TEAM_ID = """${sh(
+            returnStdout: true,
+            script: 'aws secretsmanager get-secret-value --secret-id fastlane-secrets --query SecretString --output text | jq -r .TEAM_ID'
+        ).trim()}"""
+    }
+    stages {
+        stage("Run fastlane test") {
+            steps{
+                sh """
+                export LC_ALL=en_US.UTF-8 && export LANG=en_US.UTF-8
+                fastlane test
+                """
+            }
+        }
+        stage("Run AWS Device Farm test") {
+            steps {
+                sh '/usr/bin/xcodebuild build-for-testing -scheme SampleApp -destination generic/platform=iOS DEVELOPMENT_TEAM=${TEAM_ID} -allowProvisioningUpdates -derivedDataPath ${WORKSPACE}'
+                sh 'mkdir Payload && cp -r ${WORKSPACE}/Build/Products/Debug-iphoneos/SampleApp.app Payload/'
+                sh 'zip -r Payload.zip Payload && mv Payload.zip SampleApp.ipa'
+
+                devicefarm appArtifact: 'SampleApp.ipa', appiumJavaJUnitTest: '', appiumJavaTestNGTest: '', appiumNodeTest: '', appiumPythonTest: '', appiumRubyTest: '', appiumVersionJunit: '1.4.16', appiumVersionPython: '1.4.16', appiumVersionTestng: '1.4.16', calabashFeatures: '', calabashProfile: '', calabashTags: '', deviceLatitude: 47.6204, deviceLocation: false, deviceLongitude: -122.3941, devicePoolName: 'Top Devices', environmentToRun: 'StandardEnvironment', eventCount: '', eventThrottle: '', extraData: false, extraDataArtifact: '', ifAppPerformanceMonitoring: true, ifBluetooth: true, ifGPS: true, ifNfc: true, ifSkipAppResigning: false, ifVideoRecording: true, ifVpce: false, ifWebApp: false, ifWifi: true, ignoreRunError: false, isRunUnmetered: false, jobTimeoutMinutes: 60, junitArtifact: '', junitFilter: '', password: '', projectName: 'SampleApp', radioDetails: false, runName: '${BUILD_TAG}', seed: '', storeResults: false, testSpecName: 'Default TestSpec for Android Appium Java Junit', testToRun: 'BUILTIN_FUZZ', uiautomationArtifact: '', uiautomatorArtifact: '', uiautomatorFilter: '', username: '', vpceServiceName: '', xctestArtifact: '', xctestFilter: '', xctestUiArtifact: '', xctestUiFilter: ''
+            }
+        }
+    }
+}
